@@ -8,6 +8,9 @@ use Doctrine\ORM\Mapping as ORM;
 #[ORM\Entity(repositoryClass: DinosaurRepository::class)]
 class Dinosaur
 {
+    const LARGE = 10;
+    const HUGE = 30;
+
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
@@ -21,6 +24,9 @@ class Dinosaur
 
     #[ORM\Column(length: 255)]
     private ?string $genus = null;
+
+    #[ORM\ManyToOne(inversedBy: 'dinosaurs')]
+    private ?Enclosure $enclosure = null;
 
     public function __construct(string $genus = 'Unknown', bool $isCarnivorous = false)
     {
@@ -45,7 +51,7 @@ class Dinosaur
         return $this;
     }
 
-    public function isIsCarnivorous(): ?bool
+    public function isCarnivorous(): ?bool
     {
         return $this->isCarnivorous;
     }
@@ -78,4 +84,17 @@ class Dinosaur
             $this->lenght
         );
     }
+
+    public function getEnclosure(): ?Enclosure
+    {
+        return $this->enclosure;
+    }
+
+    public function setEnclosure(?Enclosure $enclosure): self
+    {
+        $this->enclosure = $enclosure;
+
+        return $this;
+    }
+
 }
