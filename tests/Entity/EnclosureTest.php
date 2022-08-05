@@ -5,6 +5,7 @@ namespace Tests\AppBundle\Entity;
 use App\Entity\Dinosaur;
 use PHPUnit\Framework\TestCase;
 use App\Entity\Enclosure;
+use App\Exception\DinosaursAreRunningRampantException;
 use App\Exception\NotABuffetException;
 
 class EnclosureTest extends TestCase
@@ -19,7 +20,7 @@ class EnclosureTest extends TestCase
 
     public function testItAddsDinosaurs()
     {
-        $enclosure = new Enclosure();
+        $enclosure = new Enclosure(true);
         $enclosure->addDinosaur(new Dinosaur());
         $enclosure->addDinosaur(new Dinosaur());
 
@@ -29,7 +30,7 @@ class EnclosureTest extends TestCase
 
     public function testItDoesNotAllowCarnivorousDinosToMixWithHerbivores()
     {
-        $enclosure = new Enclosure();
+        $enclosure = new Enclosure(true);
         $enclosure->addDinosaur(new Dinosaur());
         $this->expectException(NotABuffetException::class);
         $enclosure->addDinosaur(new Dinosaur('Velociraptor', true));
@@ -41,8 +42,19 @@ class EnclosureTest extends TestCase
      */
     public function testItDoesNotAllowToAddNonCarnivorousDinosaursToCarnivorousEnclosure()
     {
-        $enclosure = new Enclosure();
+        $enclosure = new Enclosure(true);
         $enclosure->addDinosaur(new Dinosaur('Velociraptor', true));
         $enclosure->addDinosaur(new Dinosaur());
+    }
+
+    public function testItDoesNotAllowToAddDinosaursToUnsecureEnclosures()
+    {
+        $enclosure = new Enclosure(true);
+
+        $this->expectException(DinosaursAreRunningRampantException::class);
+        $this->expectExceptionMessage('Are you crazyy???');
+
+        $enclosure->addDinosaur(new Dinosaur());
+
     }
 }

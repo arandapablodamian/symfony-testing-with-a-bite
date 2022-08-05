@@ -2,6 +2,7 @@
 
 namespace App\Entity;
 
+use App\Exception\DinosaursAreRunningRampantException;
 use App\Repository\EnclosureRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
@@ -19,9 +20,19 @@ class Enclosure
     #[ORM\OneToMany(mappedBy: 'enclosure', targetEntity: Dinosaur::class)]
     private Collection $dinosaurs;
 
-    public function __construct()
+    #[ORM\OneToMany(mappedBy: 'enclosure', targetEntity: Security::class)]
+    private Collection $securities;
+
+    public function __construct(bool $withBasicSecurity = false)
     {
+
         $this->dinosaurs = new ArrayCollection();
+        $this->securities = new ArrayCollection();
+
+        if ($withBasicSecurity) {
+            $this->addSecurity(new Security('Fence', true, $this));
+        }
+
     }
 
     public function getId(): ?int
@@ -41,6 +52,10 @@ class Enclosure
     {  
         if (!$this->canAddDinosaur($dinosaur)) {
             throw new NotABuffetException();
+        }
+
+        if(!$this->isSecurityActive()){
+            throw new DinosaursAreRunningRampantException('Are you crazyy???');
         }
 
         if (!$this->dinosaurs->contains($dinosaur)) {
@@ -68,4 +83,45 @@ class Enclosure
         return count($this->dinosaurs) === 0
             || $this->dinosaurs->first()->isCarnivorous() === $dinosaur->isCarnivorous();
     }
+
+    /**
+     * @return Collection<int, Security>
+     */
+    public function getSecurities(): Collection
+    {
+        return $this->securities;
+    }
+
+    public function addSecurity(Security $security): self
+    {
+        if (!$this->securities->contains($security)) {
+            $this->securities->add($security);
+            $security->setEnclosure($this);
+        }
+
+        return $this;
+    }
+
+    public function removeSecurity(Security $security): self
+    {
+        if ($this->securities->removeElement($security)) {
+            // set the owning side to null (unless already changed)
+            if ($security->getEnclosure() === $this) {
+                $security->setEnclosure(null);
+            }
+        }
+
+        return $this;
+    }
+
+    public function isSecurityActive(): bool
+    {
+        foreach ($this->securities as $security) {
+            if($security->getIsActive()) {
+                return true;
+            }
+        }
+        return false;
+    }
+
 }

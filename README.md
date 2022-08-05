@@ -18,6 +18,7 @@ For run testing of all unit test:
  symfony php bin/phpunit tests/Controller/ConferenceControllerTest.php
 
 
-
+//// otra forma de correr un test unitario
+symfony php bin/phpunit --filter testItDoesNotAllowToAddDinosaursToUnsecureEnclosures
 
 Author @wolverine92 Aranda, Pablo Damian
