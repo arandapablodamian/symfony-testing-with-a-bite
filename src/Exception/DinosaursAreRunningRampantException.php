@@ -9,4 +9,5 @@ use App\Entity\Enclosure;
 class DinosaursAreRunningRampantException extends \Exception
 {
 
+    
 }

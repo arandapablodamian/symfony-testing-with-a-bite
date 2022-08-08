@@ -1,10 +1,14 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Tests\AppBundle\Entity;
 
 use App\Entity\Dinosaur;
 use App\Factory\DinosaurFactory;
 use PHPUnit\Framework\TestCase;
+use App\Services\DinosaurLengthDeterminator;
+use PHPUnit\Framework\MockObject\MockObject;
 
 class DinosaurFactoryTest extends TestCase
 {
@@ -15,14 +19,23 @@ class DinosaurFactoryTest extends TestCase
      */
     private $factory;
 
+    /**
+     * Undocumented variable
+     *
+     * @var \PHPUnit_Framework_MockObject_MockObject $lengthDeterminator
+     */
+    private $lengthDeterminator;
+
     protected function setUp(): void
     {
-       $this->factory = new DinosaurFactory();
+
+        $this->lengthDeterminator = $this->createMock(DinosaurLengthDeterminator::class);
+        $this->factory = new DinosaurFactory($lengthDeterminator);
     }
 
     public function testItGrowsALargeVelociraptor()
     {
-        $factory = new DinosaurFactory();
+        $factory = new DinosaurFactory($this->lengthDeterminator);
         $dinosaur = $factory->growVelociraptor(5);
         $this->assertInstanceOf(Dinosaur::class, $dinosaur);
         $this->assertIsString($dinosaur->getGenus());
@@ -31,7 +44,7 @@ class DinosaurFactoryTest extends TestCase
     }
 
     public function testItGrowsABabyVelociraptor()
-    {   
+    {
         if (!class_exists('Nanny')) {
             $this->markTestSkipped('There is nobody to watch the baby!');
         }
@@ -42,20 +55,19 @@ class DinosaurFactoryTest extends TestCase
     /**
      * @dataProvider getSpecificationTests
      */
-    public function testItGrowsADinosaurFromSpecification(string $spec, bool $expectedIsLarge, bool $expectedIsCarnivorous)
+    public function testItGrowsADinosaurFromSpecification(string $spec, bool $expectedIsCarnivorous)
     {
-        $dinosaur = $this->growFromSpecification($spec);
+        $this->lengthDeterminator   ->expects($this->once())
+                                    ->method('getLengthFromSpecification')
+                                    ->will($spec)
+                                    ->willReturn(20);
+        $dinosaur = $this->factory->growFromSpecification($spec);
+        $this->assertSame($dinosaur->isCarnivorous(), 'Diets do not match');
 
-        if($expectedIsLarge){
-            $this->assertGreaterThanOrEqual(Dinosaur::LARGE, $dinosaur->getLenght());
-        }else{
-            $this->assertLessThan(Dinosaur::LARGE, $dinosaur->getLenght());
-        }
-        $this->assertSame($expectedIsCarnivorous,$dinosaur->isCarnivorous(), 'Diets do not match');
-
+        $this->assertSame(20, $dinosaur->getLenght());
     }
 
-        /**
+    /**
      *
      * @param string $genus
      * @param boolean $isCarnivorous
@@ -69,38 +81,18 @@ class DinosaurFactoryTest extends TestCase
         return $dinosaur;
     }
 
-    public function growFromSpecification(string $specification): Dinosaur
-    {
-        // defaults
-        $codeName = 'InG-' . random_int(1, 99999);
-        $length = $this->getLengthFromSpecification($specification);
-        $isCarnivorous = false;
 
-
-
-        $dinosaur = $this->createDinosaur($codeName, $isCarnivorous, $length);
-        return $dinosaur;
-    }
 
     public function getSpecificationTests()
     {
         return [
-            ['large carnivorous dinosaur', true, true],
-            'default response'=>['give me all the cookies!!!', false, false],
-            ['large herbivore', true, false],
+            ['large dinosaur', true, true],
+            'default response' => ['give me all the cookies!!!', false],
+            ['large herbivore', false],
         ];
     }
 
-    /**
-     * @dataProvider getHugeDinosaurSpecTests
-     */
-    public function testItGrowsAHugeDinosaur(string $specification)
-    {
-        $dinosaur = $this->growFromSpecification($specification);
 
-        $this->assertGreaterThanOrEqual(Dinosaur::HUGE, $dinosaur->getLenght());
-
-    }
 
     public function getHugeDinosaurSpecTests()
     {
@@ -111,26 +103,5 @@ class DinosaurFactoryTest extends TestCase
             ['OMG'],
             ['?'],
         ];
-    }
-
-    private function getLengthFromSpecification(string $specification): int
-    {
-        $availableLengths = [
-            'huge' => ['min' => Dinosaur::HUGE, 'max' => 100],
-            'omg' => ['min' => Dinosaur::HUGE, 'max' => 100],
-            '?' => ['min' => Dinosaur::HUGE, 'max' => 100],
-            'large' => ['min' => Dinosaur::LARGE, 'max' => Dinosaur::HUGE - 1],
-        ];
-        $minLength = 1;
-        $maxLength = Dinosaur::LARGE - 1;
-        foreach (explode(' ', $specification) as $keyword) {
-            $keyword = strtolower($keyword);
-            if (array_key_exists($keyword, $availableLengths)) {
-                $minLength = $availableLengths[$keyword]['min'];
-                $maxLength = $availableLengths[$keyword]['max'];
-                break;
-            }
-        }
-        return random_int($minLength, $maxLength);
     }
 }

@@ -3,9 +3,22 @@
 namespace App\Factory;
 
 use App\Entity\Dinosaur;
+use App\Services\DinosaurLengthDeterminator;
 
 class DinosaurFactory
 {
+    /** @var  DinosaurLengthDeterminator $lengthDeterminator */
+    private $lengthDeterminator;
+
+    /**
+     *
+     * @param DinosaurLengthDeterminator $lengthDeterminator
+     */
+    public function __construct(DinosaurLengthDeterminator $lengthDeterminator)
+    {
+        $this->lengthDeterminator = $lengthDeterminator;
+    }
+
     /**
      *
      * @param integer $length
@@ -29,4 +42,16 @@ class DinosaurFactory
         $dinosaur->setLenght($length);
         return $dinosaur;
     }
+
+    public function growFromSpecification(string $specification): Dinosaur
+    {
+        // defaults
+        $codeName = 'InG-' . random_int(1, 99999);
+        $length = $this->lengthDeterminator->getLengthFromSpecification($specification);
+        $isCarnivorous = false;
+
+        $dinosaur = $this->createDinosaur($codeName, $isCarnivorous, $length);
+        return $dinosaur;
+    }
+
 }
