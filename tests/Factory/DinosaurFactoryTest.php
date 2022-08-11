@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Tests\AppBundle\Entity;
+namespace  App\Tests\Factory;
 
 use App\Entity\Dinosaur;
 use App\Factory\DinosaurFactory;

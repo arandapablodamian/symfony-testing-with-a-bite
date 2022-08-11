@@ -1,6 +1,6 @@
 <?php
 
-namespace Tests\AppBundle\Entity;
+namespace  App\Tests\Entity;
 
 use App\Entity\Dinosaur;
 use PHPUnit\Framework\TestCase;

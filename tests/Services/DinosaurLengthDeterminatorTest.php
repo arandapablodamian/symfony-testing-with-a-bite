@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace Tests\AppBundle\Services;
+namespace  App\Tests\Services;
 
 use App\Entity\Dinosaur;
 use App\Factory\DinosaurFactory;

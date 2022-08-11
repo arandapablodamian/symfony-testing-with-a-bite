@@ -17,10 +17,10 @@ class Enclosure
     #[ORM\Column]
     private ?int $id = null;
 
-    #[ORM\OneToMany(mappedBy: 'enclosure', targetEntity: Dinosaur::class)]
+    #[ORM\OneToMany(mappedBy: 'enclosure', targetEntity: Dinosaur::class,cascade:["persist"])]
     private Collection $dinosaurs;
 
-    #[ORM\OneToMany(mappedBy: 'enclosure', targetEntity: Security::class)]
+    #[ORM\OneToMany(mappedBy: 'enclosure', targetEntity: Security::class,cascade :["persist"])]
     private Collection $securities;
 
     public function __construct(bool $withBasicSecurity = false)
@@ -123,5 +123,4 @@ class Enclosure
         }
         return false;
     }
-
 }
